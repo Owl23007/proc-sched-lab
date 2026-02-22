@@ -40,11 +40,23 @@ const ticks = computed(() => {
     return result
 })
 
+const palette = [
+    '#3b82f6', '#10b981', '#f59e0b', '#ef4444',
+    '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16',
+]
+
+function processColor(pid) {
+    let hash = 0
+    for (const c of String(pid)) hash = (hash * 31 + c.charCodeAt(0)) & 0xffff
+    return palette[hash % palette.length]
+}
+
 function blockStyle(item) {
     const width = Math.max(44, (item.end - item.start) * pxPerUnit.value)
     return {
         width: `${width}px`,
         borderStyle: isPreempted(item.process_id) ? 'dashed' : 'solid',
+        '--proc-color': processColor(item.process_id),
     }
 }
 
@@ -99,3 +111,40 @@ function eventEmoji(type) {
         <p v-else class="placeholder">运行一次调度后显示执行时间线</p>
     </section>
 </template>
+
+<style scoped>
+.gantt {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.timeline-ruler {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-muted);
+    font-size: 11px;
+    border: 1px dashed var(--border-main);
+    border-radius: 8px;
+    padding: 5px 10px;
+    margin-top: 6px;
+}
+
+.event-row {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.event-chip {
+    border: 1px solid var(--border-main);
+    border-radius: 999px;
+    padding: 2px 9px;
+    font-size: 11px;
+    background: color-mix(in srgb, var(--bg-soft), transparent 10%);
+}
+</style>

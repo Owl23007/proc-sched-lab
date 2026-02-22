@@ -29,7 +29,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 }
 
 .kanban-header {
@@ -40,9 +40,9 @@
     flex: 1;
     min-height: 0;
     display: grid;
-    grid-template-columns: minmax(280px, 340px) 1fr minmax(300px, 400px);
-    gap: 12px;
-    align-items: start;
+    grid-template-columns: minmax(300px, 380px) 1fr minmax(300px, 380px);
+    gap: 10px;
+    align-items: stretch;
 }
 
 .kanban-column {
@@ -52,7 +52,7 @@
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     padding-right: 4px;
     /* custom scrollbar */
     scrollbar-width: thin;

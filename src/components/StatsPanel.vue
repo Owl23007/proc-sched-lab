@@ -39,52 +39,62 @@ const compareBars = computed(() => {
 </script>
 
 <template>
-    <section class="panel">
-        <div class="panel-header">
-            <h3>性能指标区</h3>
-            <p class="step-hint">Step {{ currentStep }} / {{ maxStep }} · t={{ currentTime }}</p>
+    <div class="stats-content">
+        <div class="stats-header">
+            <span class="step-hint">Step {{ currentStep }} / {{ maxStep }} · t={{ currentTime }}</span>
         </div>
 
         <div class="metric-grid">
             <article class="metric-item">
-                <h4>平均周转时间</h4><strong>{{ averageTurnaround.toFixed(2) }}</strong>
+                <h4>⏱ 平均周转</h4>
+                <strong>{{ averageTurnaround.toFixed(2) }}</strong>
+                <span style="font-size:11px;color:var(--text-muted)">ms</span>
             </article>
             <article class="metric-item">
-                <h4>平均带权周转时间</h4><strong>{{ averageWeightedTurnaround.toFixed(2) }}</strong>
+                <h4>⚖️ 带权周转</h4>
+                <strong>{{ averageWeightedTurnaround.toFixed(2) }}</strong>
+                <span style="font-size:11px;color:var(--text-muted)">倒数</span>
             </article>
             <article class="metric-item">
-                <h4>平均响应时间</h4><strong>{{ averageResponseTime.toFixed(2) }}</strong>
+                <h4>⚡ 平均响应</h4>
+                <strong>{{ averageResponseTime.toFixed(2) }}</strong>
+                <span style="font-size:11px;color:var(--text-muted)">ms</span>
             </article>
             <article class="metric-item">
-                <h4>吞吐量</h4><strong>{{ throughput.toFixed(3) }} /t</strong>
+                <h4>📦 吞吐量</h4>
+                <strong>{{ throughput.toFixed(3) }}</strong>
+                <span style="font-size:11px;color:var(--text-muted)">/t</span>
             </article>
             <article class="metric-item">
-                <h4>CPU 利用率</h4><strong>{{ (cpuUtilization * 100).toFixed(2) }}%</strong>
+                <h4>💻 CPU 利用率</h4>
+                <strong>{{ (cpuUtilization * 100).toFixed(1) }}%</strong>
             </article>
         </div>
 
-        <table v-if="metrics.length" class="table">
-            <thead>
-                <tr>
-                    <th>进程</th>
-                    <th>开始</th>
-                    <th>结束</th>
-                    <th>周转</th>
-                    <th>带权周转</th>
-                    <th>响应</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="metric in metrics" :key="metric.id">
-                    <td>{{ metric.name }}</td>
-                    <td>{{ metric.start_time }}</td>
-                    <td>{{ metric.finish_time }}</td>
-                    <td>{{ metric.turnaround_time.toFixed(2) }}</td>
-                    <td>{{ (metric.weighted_turnaround_time ?? 0).toFixed(2) }}</td>
-                    <td>{{ (metric.response_time ?? 0).toFixed(2) }}</td>
-                </tr>
-            </tbody>
-        </table>
+        <div v-if="metrics.length" class="table-wrap stats-table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>进程</th>
+                        <th>开始</th>
+                        <th>结束</th>
+                        <th>周转</th>
+                        <th>带权周转</th>
+                        <th>响应</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="metric in metrics" :key="metric.id">
+                        <td>{{ metric.name }}</td>
+                        <td>{{ metric.start_time }}</td>
+                        <td>{{ metric.finish_time }}</td>
+                        <td>{{ metric.turnaround_time.toFixed(2) }}</td>
+                        <td>{{ (metric.weighted_turnaround_time ?? 0).toFixed(2) }}</td>
+                        <td>{{ (metric.response_time ?? 0).toFixed(2) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <p v-else class="placeholder">暂无统计数据</p>
 
         <div class="panel-inner">
@@ -110,5 +120,22 @@ const compareBars = computed(() => {
             </div>
             <p v-else class="placeholder">暂无趋势数据</p>
         </div>
-    </section>
+    </div>
 </template>
+
+<style scoped>
+.stats-content {
+    display: grid;
+    gap: 8px;
+}
+
+.stats-header {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.stats-table-wrap {
+    max-height: 180px;
+    overflow-y: auto;
+}
+</style>

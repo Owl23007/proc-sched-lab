@@ -14,6 +14,8 @@ const preferredDark = usePreferredDark()
 const theme = useStorage('schedlab-theme', preferredDark.value ? 'dark' : 'light')
 const zoom = ref(10)
 const debugMode = ref(false)
+const headerCollapsed = ref(false)
+const rightTab = ref('detail')
 
 const isDark = computed(() => theme.value === 'dark')
 const canPlay = computed(() => (simulation.result?.snapshots?.length ?? 0) > 0)
@@ -26,6 +28,16 @@ const progress = computed(() => {
 
 async function runCurrent() {
     await simulation.runOnce()
+}
+
+async function startPlayback() {
+    if (!canPlay.value) {
+        await runCurrent()
+    }
+
+    if (simulation.result?.snapshots?.length) {
+        simulation.play()
+    }
 }
 
 async function runCompare() {
@@ -46,45 +58,44 @@ watchEffect(() => {
         <template #header>
             <div class="header panel">
                 <div class="header-top">
-                    <div>
-                        <h1>SchedLab · v0.3</h1>
+                    <div class="brand">
+                        <h1>SchedLab<span class="version-tag">v0.3</span></h1>
                         <p>进程调度可视化实验平台</p>
                     </div>
-                    <button class="btn ghost" @click="toggleTheme">
-                        {{ isDark ? '切换亮色主题' : '切换暗色主题' }}
-                    </button>
+                    <div class="header-actions">
+                        <span class="backend-indicator">后端：{{ simulation.backendDisplay }}</span>
+                        <button class="btn ghost btn-sm" @click="headerCollapsed = !headerCollapsed">
+                            {{ headerCollapsed ? '▼ 展开' : '▲ 收起' }}
+                        </button>
+                        <button class="btn ghost" @click="toggleTheme">
+                            {{ isDark ? '☀ 亮色' : '🌙 暗色' }}
+                        </button>
+                    </div>
                 </div>
 
-                <section class="panel-inner">
-                    <div class="panel-header">
-                        <h3>控制栏</h3>
-                        <span class="backend-indicator">当前运行后端：{{ simulation.backendDisplay }}</span>
-                    </div>
-
-                    <div class="controls">
+                <div class="header-collapse" :class="{ collapsed: headerCollapsed }">
+                    <div class="ctrl-row">
                         <label>
-                            算法选择
+                            算法
                             <select v-model="simulation.algorithm">
                                 <option v-for="item in simulation.algorithms" :key="item.key" :value="item.key">{{
                                     item.label }}</option>
                             </select>
                         </label>
-
                         <label>
-                            时间片大小
-                            <input v-model.number="simulation.quantum" type="number" min="1" />
+                            时间片
+                            <input v-model.number="simulation.quantum" type="number" min="1" class="input-short" />
                         </label>
-
                         <label>
-                            队列数量
-                            <input v-model.number="simulation.queueCount" type="number" min="1" max="6" />
+                            队列数
+                            <input v-model.number="simulation.queueCount" type="number" min="1" max="6"
+                                class="input-short" />
                         </label>
-
                         <label>
-                            优先级衰减值
-                            <input v-model.number="simulation.priorityDecay" type="number" min="1" />
+                            优先级衰减
+                            <input v-model.number="simulation.priorityDecay" type="number" min="1"
+                                class="input-short" />
                         </label>
-
                         <label>
                             时间标尺
                             <select v-model.number="zoom">
@@ -93,9 +104,8 @@ watchEffect(() => {
                                 <option :value="100">100ms</option>
                             </select>
                         </label>
-
                         <label>
-                            调试模式
+                            调试
                             <select v-model="debugMode">
                                 <option :value="false">关闭</option>
                                 <option :value="true">开启</option>
@@ -103,18 +113,22 @@ watchEffect(() => {
                         </label>
                     </div>
 
-                    <div class="playback-controls top-gap">
-                        <button class="btn" :disabled="simulation.isRunning" @click="runCurrent">开始</button>
-                        <button class="btn ghost" :disabled="!canPlay" @click="simulation.pausePlayback">暂停</button>
-                        <button class="btn ghost" :disabled="!canPlay" @click="simulation.resetPlayback">重置</button>
-                        <button class="btn ghost" :disabled="!canPlay" @click="simulation.stepNext">单步执行</button>
+                    <div class="ctrl-row">
+                        <div class="btn-group">
+                            <button class="btn" :disabled="simulation.isRunning" @click="startPlayback">▶ 开始</button>
+                            <button class="btn ghost" :disabled="!canPlay" @click="simulation.pausePlayback">⏸
+                                暂停</button>
+                            <button class="btn ghost" :disabled="!canPlay" @click="simulation.resetPlayback">↺
+                                重置</button>
+                            <button class="btn ghost" :disabled="!canPlay" @click="simulation.stepNext">⏭ 单步</button>
+                        </div>
+                        <div class="ctrl-sep"></div>
                         <button class="btn ghost" :disabled="simulation.isRunning" @click="runCompare">算法对比</button>
                         <button class="btn ghost" :disabled="!simulation.result"
                             @click="simulation.exportMarkdownReport">导出
-                            Markdown</button>
+                            MD</button>
                         <button class="btn ghost" :disabled="!simulation.result" @click="simulation.exportPdfReport">导出
                             PDF</button>
-
                         <label>
                             速度
                             <select :value="simulation.playbackSpeed" :disabled="!canPlay"
@@ -127,13 +141,14 @@ watchEffect(() => {
                             </select>
                         </label>
                     </div>
+                </div>
 
-                    <div class="progress-wrap top-gap">
-                        <input type="range" min="0" :max="simulation.maxStep" :value="simulation.currentStep"
-                            :disabled="!canPlay" @input="simulation.seek($event.target.value)" />
-                        <span>{{ progress }}%</span>
-                    </div>
-                </section>
+                <div class="progress-wrap">
+                    <input type="range" min="0" :max="simulation.maxStep" :value="simulation.currentStep"
+                        :disabled="!canPlay" :style="{ '--pct': progress + '%' }"
+                        @input="simulation.seek($event.target.value)" />
+                    <span class="progress-pct">{{ progress }}%</span>
+                </div>
             </div>
         </template>
 
@@ -152,13 +167,28 @@ watchEffect(() => {
         </template>
 
         <template #right>
-            <ProcessDetail :process="simulation.selectedProcess" :history="simulation.selectedProcessHistory" />
-            <StatsPanel :metrics="simulation.result?.metrics ?? []" :average-turnaround="simulation.averageTurnaround"
-                :average-weighted-turnaround="simulation.averageWeightedTurnaround"
-                :average-response-time="simulation.averageResponseTime" :throughput="simulation.throughput"
-                :cpu-utilization="simulation.cpuUtilization" :current-step="simulation.currentStep"
-                :max-step="simulation.maxStep" :current-time="simulation.currentTime"
-                :compare="simulation.compareResult" :turnaround-trend="simulation.turnaroundTrend" />
+            <div class="panel right-tabbed-panel">
+                <div class="tab-bar">
+                    <button class="tab-btn" :class="{ active: rightTab === 'detail' }" @click="rightTab = 'detail'">
+                        📋 进程详情
+                    </button>
+                    <button class="tab-btn" :class="{ active: rightTab === 'stats' }" @click="rightTab = 'stats'">
+                        📊 性能指标
+                    </button>
+                </div>
+
+                <div class="tab-body">
+                    <ProcessDetail v-show="rightTab === 'detail'" :process="simulation.selectedProcess"
+                        :history="simulation.selectedProcessHistory" />
+                    <StatsPanel v-show="rightTab === 'stats'" :metrics="simulation.result?.metrics ?? []"
+                        :average-turnaround="simulation.averageTurnaround"
+                        :average-weighted-turnaround="simulation.averageWeightedTurnaround"
+                        :average-response-time="simulation.averageResponseTime" :throughput="simulation.throughput"
+                        :cpu-utilization="simulation.cpuUtilization" :current-step="simulation.currentStep"
+                        :max-step="simulation.maxStep" :current-time="simulation.currentTime"
+                        :compare="simulation.compareResult" :turnaround-trend="simulation.turnaroundTrend" />
+                </div>
+            </div>
         </template>
     </KanbanLayout>
 

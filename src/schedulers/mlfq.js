@@ -1,5 +1,6 @@
-export function runMLFQ(processes, baseQuantum) {
-  const quantums = [Math.max(1, baseQuantum), Math.max(1, baseQuantum) * 2, Math.max(1, baseQuantum) * 4]
+export function runMLFQ(processes, baseQuantum, queueCount = 3) {
+  const levels = Math.max(1, Number(queueCount) || 3)
+  const quantums = Array.from({ length: levels }, (_, index) => Math.max(1, baseQuantum) * 2 ** index)
   const cloned = processes.map((process) => ({
     ...process,
     remaining_time: process.burst_time,
@@ -12,7 +13,7 @@ export function runMLFQ(processes, baseQuantum) {
   let time = 0
   let completed = 0
   const arrived = new Array(cloned.length).fill(false)
-  const queues = [[], [], []]
+  const queues = Array.from({ length: levels }, () => [])
   const timeline = []
   const snapshots = []
 
@@ -52,7 +53,7 @@ export function runMLFQ(processes, baseQuantum) {
       cloned[index].finish_time = time
       completed += 1
     } else {
-      const nextLevel = Math.min(2, level + 1)
+      const nextLevel = Math.min(levels - 1, level + 1)
       cloned[index].queue_level = nextLevel
       queues[nextLevel].push(index)
     }
@@ -108,22 +109,47 @@ function buildSnapshot(processes, time, runningId, queues) {
 }
 
 function finalize(processes, timeline, snapshots, totalTime) {
-  const metrics = processes.map((p) => ({
-    id: p.id,
-    name: p.name,
-    start_time: p.start_time ?? 0,
-    finish_time: p.finish_time ?? totalTime,
-    turnaround_time: (p.finish_time ?? totalTime) - p.arrival_time,
-  }))
+  const metrics = processes.map((p) => {
+    const turnaround = (p.finish_time ?? totalTime) - p.arrival_time
+    const response = (p.start_time ?? p.arrival_time) - p.arrival_time
+    return {
+      id: p.id,
+      name: p.name,
+      start_time: p.start_time ?? 0,
+      finish_time: p.finish_time ?? totalTime,
+      turnaround_time: turnaround,
+      weighted_turnaround_time: p.burst_time > 0 ? turnaround / p.burst_time : 0,
+      response_time: response,
+    }
+  })
 
   const average_turnaround_time =
     metrics.reduce((sum, metric) => sum + metric.turnaround_time, 0) / Math.max(1, metrics.length)
+  const average_weighted_turnaround_time =
+    metrics.reduce((sum, metric) => sum + metric.weighted_turnaround_time, 0) / Math.max(1, metrics.length)
+  const average_response_time = metrics.reduce((sum, metric) => sum + metric.response_time, 0) / Math.max(1, metrics.length)
+  const cpuBusyTime = timeline.reduce((sum, item) => sum + Math.max(0, item.end - item.start), 0)
+
+  const events = timeline.map((item, index) => {
+    const sameProcessBefore = timeline.slice(0, index).some((prev) => prev.process_id === item.process_id)
+    return {
+      time: item.end,
+      type: sameProcessBefore ? 'preempt' : 'complete',
+      process_id: item.process_id,
+    }
+  })
+
+  const snapshotsWithEvents = snapshots.map((snapshot) => ({ ...snapshot, events }))
 
   return {
     timeline,
-    snapshots,
+    snapshots: snapshotsWithEvents,
     metrics,
     average_turnaround_time,
+    average_weighted_turnaround_time,
+    average_response_time,
+    throughput: totalTime > 0 ? metrics.length / totalTime : 0,
+    cpu_utilization: totalTime > 0 ? cpuBusyTime / totalTime : 0,
     total_time: totalTime,
   }
 }

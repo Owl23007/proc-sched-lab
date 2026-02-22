@@ -19,7 +19,7 @@ async function loadWasmApi() {
   return wasmApiPromise
 }
 
-export async function runSimulation({ algorithm, processes, quantum, priorityStep }) {
+export async function runSimulation({ algorithm, processes, quantum, priorityStep, queueCount }) {
   const wasm = await loadWasmApi()
 
   if (wasm) {
@@ -46,6 +46,11 @@ export async function runSimulation({ algorithm, processes, quantum, prioritySte
     return { ...simulation, __backend: 'js' }
   }
 
-  const simulation = runner.run({ processes, baseQuantum: quantum })
+  if (algorithm === 'mlfq') {
+    const simulation = runner.run({ processes, baseQuantum: quantum, queueCount })
+    return { ...simulation, __backend: 'js' }
+  }
+
+  const simulation = runner.run({ processes, quantum, priorityStep, baseQuantum: quantum, queueCount })
   return { ...simulation, __backend: 'js' }
 }

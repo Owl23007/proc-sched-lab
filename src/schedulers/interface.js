@@ -1,5 +1,7 @@
 import { runMLFQ } from './mlfq'
 import { runPriorityRR } from './priorityRR'
+import { runFCFS } from './fcfs'
+import { runSJF } from './sjf'
 
 export const ALGORITHMS = {
     priority_rr: {
@@ -10,6 +12,16 @@ export const ALGORITHMS = {
     mlfq: {
         key: 'mlfq',
         label: 'MLFQ',
-        run: ({ processes, baseQuantum }) => runMLFQ(processes, baseQuantum),
+        run: ({ processes, baseQuantum, queueCount }) => runMLFQ(processes, baseQuantum, queueCount),
+    },
+    fcfs: {
+        key: 'fcfs',
+        label: 'FCFS',
+        run: ({ processes }) => runFCFS(processes),
+    },
+    sjf: {
+        key: 'sjf',
+        label: 'SJF',
+        run: ({ processes }) => runSJF(processes),
     },
 }

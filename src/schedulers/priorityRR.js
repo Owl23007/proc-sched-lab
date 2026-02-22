@@ -101,22 +101,48 @@ function buildSnapshot(processes, time, runningId, queues) {
 }
 
 function finalize(processes, timeline, snapshots, totalTime) {
-    const metrics = processes.map((p) => ({
-        id: p.id,
-        name: p.name,
-        start_time: p.start_time ?? 0,
-        finish_time: p.finish_time ?? totalTime,
-        turnaround_time: (p.finish_time ?? totalTime) - p.arrival_time,
-    }))
+    const metrics = processes.map((p) => {
+        const turnaround = (p.finish_time ?? totalTime) - p.arrival_time
+        const response = (p.start_time ?? p.arrival_time) - p.arrival_time
+        return {
+            id: p.id,
+            name: p.name,
+            start_time: p.start_time ?? 0,
+            finish_time: p.finish_time ?? totalTime,
+            turnaround_time: turnaround,
+            weighted_turnaround_time: p.burst_time > 0 ? turnaround / p.burst_time : 0,
+            response_time: response,
+        }
+    })
 
     const average_turnaround_time =
         metrics.reduce((sum, metric) => sum + metric.turnaround_time, 0) / Math.max(1, metrics.length)
+    const average_weighted_turnaround_time =
+        metrics.reduce((sum, metric) => sum + metric.weighted_turnaround_time, 0) / Math.max(1, metrics.length)
+    const average_response_time =
+        metrics.reduce((sum, metric) => sum + metric.response_time, 0) / Math.max(1, metrics.length)
+    const cpuBusyTime = timeline.reduce((sum, item) => sum + Math.max(0, item.end - item.start), 0)
+
+    const events = timeline.map((item, index) => {
+        const sameProcessBefore = timeline.slice(0, index).some((prev) => prev.process_id === item.process_id)
+        return {
+            time: item.end,
+            type: sameProcessBefore ? 'preempt' : 'complete',
+            process_id: item.process_id,
+        }
+    })
+
+    const snapshotsWithEvents = snapshots.map((snapshot) => ({ ...snapshot, events }))
 
     return {
         timeline,
-        snapshots,
+        snapshots: snapshotsWithEvents,
         metrics,
         average_turnaround_time,
+        average_weighted_turnaround_time,
+        average_response_time,
+        throughput: totalTime > 0 ? metrics.length / totalTime : 0,
+        cpu_utilization: totalTime > 0 ? cpuBusyTime / totalTime : 0,
         total_time: totalTime,
     }
 }

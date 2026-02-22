@@ -59,8 +59,12 @@ body {
 
 #app {
     margin: 0 auto;
-    padding: 20px;
-    max-width: 1360px;
+    padding: 16px 20px;
+    max-width: 1440px;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .layout {
@@ -513,18 +517,7 @@ button {
 
 /* Kanban layout global helpers */
 html,
-body,
-#app {
+body {
     height: 100%;
-}
-
-#app {
-    display: block;
-    /* keep centered container behavior */
-}
-
-/* column internal scroll when used outside the layout scope */
-.column-scroll {
-    max-height: calc(100vh - 120px);
-    overflow: auto;
+    overflow: hidden;
 }

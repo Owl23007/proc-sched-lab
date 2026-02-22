@@ -6,21 +6,15 @@
 
         <main class="kanban-body">
             <section class="kanban-column kanban-left">
-                <div class="column-scroll">
-                    <slot name="left" />
-                </div>
+                <slot name="left" />
             </section>
 
             <section class="kanban-column kanban-center">
-                <div class="column-scroll">
-                    <slot name="center" />
-                </div>
+                <slot name="center" />
             </section>
 
             <aside class="kanban-column kanban-right">
-                <div class="column-scroll">
-                    <slot name="right" />
-                </div>
+                <slot name="right" />
             </aside>
         </main>
     </div>
@@ -32,41 +26,63 @@
 
 <style scoped>
 .kanban-root {
-    height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
 }
 
 .kanban-header {
-    padding: 0;
+    flex-shrink: 0;
 }
 
 .kanban-body {
+    flex: 1;
+    min-height: 0;
     display: grid;
-    grid-template-columns: minmax(280px, 360px) 1fr minmax(320px, 420px);
-    gap: 16px;
-    align-content: start;
-    padding: 0;
+    grid-template-columns: minmax(280px, 340px) 1fr minmax(300px, 400px);
+    gap: 12px;
+    align-items: start;
 }
 
 .kanban-column {
+    /* fill available height and scroll internally */
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
+    gap: 12px;
+    padding-right: 4px;
+    /* custom scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-main) transparent;
 }
 
-.column-scroll {
-    /* ensure internal scrolling but prevent page scroll */
-    max-height: calc(100vh - 120px);
-    overflow: auto;
-    padding-right: 6px;
+.kanban-column::-webkit-scrollbar {
+    width: 5px;
+}
+
+.kanban-column::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.kanban-column::-webkit-scrollbar-thumb {
+    background: var(--border-main);
+    border-radius: 999px;
 }
 
 /* small screen fallback */
-@media (max-width: 1200px) {
+@media (max-width: 1100px) {
     .kanban-body {
         grid-template-columns: 1fr;
-        grid-auto-rows: auto;
+        height: auto;
+        overflow-y: visible;
+    }
+
+    .kanban-column {
+        height: auto;
+        overflow-y: visible;
     }
 }
 </style>

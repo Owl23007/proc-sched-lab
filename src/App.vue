@@ -144,26 +144,21 @@ watchEffect(() => {
         </template>
 
         <template #center>
-            <section class="grid-2">
-                <GanttChart :timeline="simulation.visibleTimeline" :current-time="simulation.currentTime"
-                    :events="simulation.events" :zoom="zoom" :selected-process-id="simulation.selectedProcessId"
-                    @select="simulation.setSelectedProcess" />
-                <QueueView :snapshot="simulation.currentSnapshot" :waiting-queue="simulation.waitingQueue"
-                    :completed-queue="simulation.completedQueue" :debug-mode="debugMode" />
-            </section>
+            <GanttChart :timeline="simulation.visibleTimeline" :current-time="simulation.currentTime"
+                :events="simulation.events" :zoom="zoom" :selected-process-id="simulation.selectedProcessId"
+                @select="simulation.setSelectedProcess" />
+            <QueueView :snapshot="simulation.currentSnapshot" :waiting-queue="simulation.waitingQueue"
+                :completed-queue="simulation.completedQueue" :debug-mode="debugMode" />
         </template>
 
         <template #right>
-            <section class="grid-2">
-                <ProcessDetail :process="simulation.selectedProcess" :history="simulation.selectedProcessHistory" />
-                <StatsPanel :metrics="simulation.result?.metrics ?? []"
-                    :average-turnaround="simulation.averageTurnaround"
-                    :average-weighted-turnaround="simulation.averageWeightedTurnaround"
-                    :average-response-time="simulation.averageResponseTime" :throughput="simulation.throughput"
-                    :cpu-utilization="simulation.cpuUtilization" :current-step="simulation.currentStep"
-                    :max-step="simulation.maxStep" :current-time="simulation.currentTime"
-                    :compare="simulation.compareResult" :turnaround-trend="simulation.turnaroundTrend" />
-            </section>
+            <ProcessDetail :process="simulation.selectedProcess" :history="simulation.selectedProcessHistory" />
+            <StatsPanel :metrics="simulation.result?.metrics ?? []" :average-turnaround="simulation.averageTurnaround"
+                :average-weighted-turnaround="simulation.averageWeightedTurnaround"
+                :average-response-time="simulation.averageResponseTime" :throughput="simulation.throughput"
+                :cpu-utilization="simulation.cpuUtilization" :current-step="simulation.currentStep"
+                :max-step="simulation.maxStep" :current-time="simulation.currentTime"
+                :compare="simulation.compareResult" :turnaround-trend="simulation.turnaroundTrend" />
         </template>
     </KanbanLayout>
 

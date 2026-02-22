@@ -510,3 +510,21 @@ button {
     color: var(--danger);
     font-weight: 600;
 }
+
+/* Kanban layout global helpers */
+html,
+body,
+#app {
+    height: 100%;
+}
+
+#app {
+    display: block;
+    /* keep centered container behavior */
+}
+
+/* column internal scroll when used outside the layout scope */
+.column-scroll {
+    max-height: calc(100vh - 120px);
+    overflow: auto;
+}

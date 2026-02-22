@@ -6,9 +6,17 @@ const props = defineProps({
 
 <template>
   <section class="panel">
-    <h3>队列状态</h3>
+    <div class="panel-header">
+      <h3>队列状态</h3>
+      <p v-if="snapshot" class="step-hint">t={{ snapshot.time }}</p>
+    </div>
     <div v-if="snapshot" class="queue-wrap">
-      <p>调度时刻：t={{ snapshot.time }} | 运行中：{{ snapshot.running ?? 'Idle' }}</p>
+      <p>
+        当前执行：
+        <strong class="tag" :class="snapshot.running ? 'is-running' : 'is-idle'">
+          {{ snapshot.running ?? 'Idle' }}
+        </strong>
+      </p>
       <div class="queues">
         <div v-for="(queue, index) in snapshot.ready_queues" :key="index" class="queue-item">
           <h4>队列 {{ index + 1 }}</h4>

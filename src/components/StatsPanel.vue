@@ -2,12 +2,18 @@
 const props = defineProps({
   metrics: { type: Array, default: () => [] },
   averageTurnaround: { type: Number, default: 0 },
+  currentStep: { type: Number, default: 0 },
+  maxStep: { type: Number, default: 0 },
+  currentTime: { type: Number, default: 0 },
 })
 </script>
 
 <template>
   <section class="panel">
-    <h3>统计结果</h3>
+    <div class="panel-header">
+      <h3>统计结果</h3>
+      <p class="step-hint">Step {{ currentStep }} / {{ maxStep }} · t={{ currentTime }}</p>
+    </div>
     <table v-if="metrics.length" class="table">
       <thead>
         <tr>

@@ -54,6 +54,25 @@ const filteredProcesses = computed(() => {
         })
 })
 
+const activeFilterCount = computed(() => {
+    let count = 0
+    if (search.value.trim()) {
+        count += 1
+    }
+    if (stateFilter.value !== 'all') {
+        count += 1
+    }
+    if (minPriority.value !== '') {
+        count += 1
+    }
+    if (maxPriority.value !== '') {
+        count += 1
+    }
+    return count
+})
+
+const hasActiveFilters = computed(() => activeFilterCount.value > 0)
+
 function update(index, key, value) {
     if (index < 0 || index >= props.processes.length) {
         return
@@ -126,6 +145,27 @@ function statusLabel(processId) {
     }
     return '🔵 等待'
 }
+
+function statusClass(processId) {
+    const state = props.stateMap.get(processId) ?? 'W'
+    if (state === 'E') {
+        return 'is-running'
+    }
+    if (state === 'R') {
+        return 'is-ready'
+    }
+    if (state === 'F') {
+        return 'is-finished'
+    }
+    return 'is-waiting'
+}
+
+function resetFilters() {
+    search.value = ''
+    stateFilter.value = 'all'
+    minPriority.value = ''
+    maxPriority.value = ''
+}
 </script>
 
 <template>
@@ -143,6 +183,14 @@ function statusLabel(processId) {
             <button class="btn ghost btn-sm" :class="{ active: showAddForm }" @click="showAddForm = !showAddForm"
                 title="添加进程">＋ 添加</button>
             <button class="btn ghost btn-sm" @click="showImportModal = true" title="批量导入">📄 导入</button>
+            <button class="btn ghost btn-sm" :disabled="!hasActiveFilters" @click="resetFilters" title="清空筛选">
+                清空
+            </button>
+        </div>
+
+        <div class="toolbar-meta">
+            <span v-if="hasActiveFilters" class="filter-hint">已启用 {{ activeFilterCount }} 个筛选条件</span>
+            <span v-else class="filter-hint muted">未启用筛选条件</span>
         </div>
 
         <!-- Collapsible filters -->
@@ -207,9 +255,14 @@ function statusLabel(processId) {
                         </td>
                         <td><input type="number" min="1" :value="row.process.burst_time"
                                 @input="update(row.sourceIndex, 'burst_time', $event.target.value)" @click.stop /></td>
-                        <td><span class="status-chip">{{ statusLabel(row.process.id) }}</span></td>
+                        <td><span class="status-chip" :class="statusClass(row.process.id)">{{
+                            statusLabel(row.process.id)
+                                }}</span></td>
                         <td><button class="btn ghost btn-sm" @click.stop="removeProcess(row.sourceIndex)">✕</button>
                         </td>
+                    </tr>
+                    <tr v-if="!filteredProcesses.length" class="empty-row">
+                        <td colspan="7">暂无匹配进程，请调整筛选条件。</td>
                     </tr>
                 </tbody>
             </table>
@@ -233,11 +286,29 @@ function statusLabel(processId) {
     display: flex;
     gap: 6px;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .search-input {
     flex: 1;
     min-width: 0;
+    min-height: 30px;
+}
+
+.toolbar-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 18px;
+}
+
+.filter-hint {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.filter-hint.muted {
+    color: var(--text-muted);
 }
 
 .filter-row {
@@ -284,6 +355,60 @@ function statusLabel(processId) {
     color: var(--text-main);
 }
 
+.table-wrap {
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    overflow: auto;
+}
+
+.process-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: color-mix(in srgb, var(--bg-soft), transparent 12%);
+}
+
+.process-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.process-table tbody tr:hover td {
+    background: color-mix(in srgb, var(--accent), transparent 94%);
+}
+
+.empty-row td {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 18px 8px;
+}
+
+.status-chip {
+    border-color: var(--border-main);
+    background: color-mix(in srgb, var(--bg-soft), transparent 20%);
+}
+
+.status-chip.is-running {
+    border-color: color-mix(in srgb, var(--success), transparent 40%);
+    color: var(--success);
+    background: color-mix(in srgb, var(--success), transparent 86%);
+}
+
+.status-chip.is-ready {
+    border-color: color-mix(in srgb, var(--accent), transparent 40%);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent), transparent 86%);
+}
+
+.status-chip.is-finished {
+    border-color: var(--border-main);
+    color: var(--text-muted);
+    background: color-mix(in srgb, var(--bg-soft), transparent 8%);
+}
+
+.status-chip.is-waiting {
+    border-color: color-mix(in srgb, var(--border-main), transparent 8%);
+}
+
 .btn-sm.active {
     background: var(--accent-soft);
     border-color: var(--accent);
@@ -291,18 +416,19 @@ function statusLabel(processId) {
 }
 
 .collapse-section {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.25s ease;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.2s ease;
     overflow: hidden;
 }
 
 .collapse-section>* {
-    overflow: hidden;
-    min-height: 0;
+    overflow: visible;
 }
 
 .collapse-section.open {
-    grid-template-rows: 1fr;
+    max-height: 180px;
+    opacity: 1;
+    margin-top: 2px;
 }
 </style>

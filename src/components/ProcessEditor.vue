@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import { createProcess } from '../utils/pcb'
+import { getStateLabel, getStateClass } from '../utils/processState'
 import ModalDialog from './ModalDialog.vue'
 
 const props = defineProps({
@@ -133,31 +134,11 @@ function importJson() {
 }
 
 function statusLabel(processId) {
-    const state = props.stateMap.get(processId) ?? 'W'
-    if (state === 'E') {
-        return '🟢 执行'
-    }
-    if (state === 'R') {
-        return '🟡 就绪'
-    }
-    if (state === 'F') {
-        return '⚪ 完成'
-    }
-    return '🔵 等待'
+    return getStateLabel(props.stateMap.get(processId) ?? 'W')
 }
 
 function statusClass(processId) {
-    const state = props.stateMap.get(processId) ?? 'W'
-    if (state === 'E') {
-        return 'is-running'
-    }
-    if (state === 'R') {
-        return 'is-ready'
-    }
-    if (state === 'F') {
-        return 'is-finished'
-    }
-    return 'is-waiting'
+    return getStateClass(props.stateMap.get(processId) ?? 'W')
 }
 
 function resetFilters() {

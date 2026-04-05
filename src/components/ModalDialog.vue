@@ -17,7 +17,7 @@ function onOverlay(e) {
 <template>
     <Teleport to="body">
         <Transition name="modal">
-            <div v-if="open" class="modal-overlay" @mousedown="onOverlay">
+            <div v-if="open" class="modal-overlay" @mousedown="onOverlay" @keydown.esc="emit('close')">
                 <div class="modal-dialog" :style="{ maxWidth: width }">
                     <div class="modal-header">
                         <h3>{{ title }}</h3>

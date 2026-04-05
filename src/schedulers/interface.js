@@ -25,3 +25,6 @@ export const ALGORITHMS = {
         run: ({ processes }) => runSJF(processes),
     },
 }
+
+/** 扁平化算法列表（供 store / UI 遍历用） */
+export const ALGORITHM_LIST = Object.values(ALGORITHMS).map(({ key, label }) => ({ key, label }))

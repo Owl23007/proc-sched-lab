@@ -36,6 +36,9 @@ const compareBars = computed(() => {
         width: `${Math.round((item.value / max) * 100)}%`,
     }))
 })
+
+/** 趋势图：归一化到最大值，柱高最大 60px */
+const trendMax = computed(() => Math.max(1, ...props.turnaroundTrend.map((p) => p.y)))
 </script>
 
 <template>
@@ -48,22 +51,22 @@ const compareBars = computed(() => {
             <article class="metric-item">
                 <h4>⏱ 平均周转</h4>
                 <strong>{{ averageTurnaround.toFixed(2) }}</strong>
-                <span style="font-size:11px;color:var(--text-muted)">ms</span>
+                <span class="unit-label">ms</span>
             </article>
             <article class="metric-item">
                 <h4>⚖️ 带权周转</h4>
                 <strong>{{ averageWeightedTurnaround.toFixed(2) }}</strong>
-                <span style="font-size:11px;color:var(--text-muted)">倒数</span>
+                <span class="unit-label">倒数</span>
             </article>
             <article class="metric-item">
                 <h4>⚡ 平均响应</h4>
                 <strong>{{ averageResponseTime.toFixed(2) }}</strong>
-                <span style="font-size:11px;color:var(--text-muted)">ms</span>
+                <span class="unit-label">ms</span>
             </article>
             <article class="metric-item">
                 <h4>📦 吞吐量</h4>
                 <strong>{{ throughput.toFixed(3) }}</strong>
-                <span style="font-size:11px;color:var(--text-muted)">/t</span>
+                <span class="unit-label">/t</span>
             </article>
             <article class="metric-item">
                 <h4>💻 CPU 利用率</h4>
@@ -114,9 +117,13 @@ const compareBars = computed(() => {
         <div class="panel-inner">
             <h4>周转时间趋势（随完成进程数量变化）</h4>
             <div v-if="turnaroundTrend.length" class="trend-row">
-                <span v-for="point in turnaroundTrend" :key="point.x" class="trend-point"
-                    :style="{ height: `${Math.max(8, point.y * 6)}px` }"
-                    :title="`n=${point.x}, avg=${point.y.toFixed(2)}`" />
+                <span
+                    v-for="point in turnaroundTrend"
+                    :key="point.x"
+                    class="trend-point"
+                    :style="{ height: `${Math.max(4, Math.round((point.y / trendMax) * 60))}px` }"
+                    :title="`n=${point.x}, avg=${point.y.toFixed(2)}`"
+                />
             </div>
             <p v-else class="placeholder">暂无趋势数据</p>
         </div>
@@ -137,5 +144,10 @@ const compareBars = computed(() => {
 .stats-table-wrap {
     max-height: 180px;
     overflow-y: auto;
+}
+
+.unit-label {
+    font-size: 11px;
+    color: var(--text-muted);
 }
 </style>

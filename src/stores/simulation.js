@@ -1,14 +1,9 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
+import { useIntervalFn } from '@vueuse/core'
 import { defaultProcesses } from '../utils/pcb'
 import { runSimulation } from '../wasm/scheduler'
-
-const ALGORITHMS = [
-    { key: 'priority_rr', label: 'Priority RR' },
-    { key: 'mlfq', label: 'MLFQ' },
-    { key: 'fcfs', label: 'FCFS' },
-    { key: 'sjf', label: 'SJF' },
-]
+import { ALGORITHM_LIST } from '../schedulers/interface'
 
 export const useSimulationStore = defineStore('simulation', () => {
     const processes = ref(defaultProcesses())
@@ -26,7 +21,13 @@ export const useSimulationStore = defineStore('simulation', () => {
     const currentStep = ref(0)
     const playbackSpeed = ref(1)
     const selectedProcessId = ref('')
-    let playTimer = null
+
+    // 播放器：使用 VueUse useIntervalFn（自动响应 playbackSpeed 变化，无需手动重启）
+    const { resume: _resumeTimer, pause: _pauseTimer } = useIntervalFn(
+        () => stepNext(),
+        computed(() => Math.max(30, Math.floor(1000 / playbackSpeed.value))),
+        { immediate: false },
+    )
 
     const maxStep = computed(() => {
         const snapshots = result.value?.snapshots ?? []
@@ -208,8 +209,8 @@ export const useSimulationStore = defineStore('simulation', () => {
 
     async function runComparison() {
         pausePlayback()
-        const runs = await Promise.all(ALGORITHMS.map((item) => runOnce(item.key)))
-        compareResult.value = ALGORITHMS.reduce((map, item, index) => {
+        const runs = await Promise.all(ALGORITHM_LIST.map((item) => runOnce(item.key)))
+        compareResult.value = ALGORITHM_LIST.reduce((map, item, index) => {
             map[item.key] = runs[index]
             return map
         }, {})
@@ -219,10 +220,7 @@ export const useSimulationStore = defineStore('simulation', () => {
     }
 
     function clearPlayTimer() {
-        if (playTimer) {
-            clearInterval(playTimer)
-            playTimer = null
-        }
+        _pauseTimer()
     }
 
     function stepNext() {
@@ -256,11 +254,8 @@ export const useSimulationStore = defineStore('simulation', () => {
     }
 
     function startPlayTimer() {
-        clearPlayTimer()
-        const interval = Math.max(30, Math.floor(1000 / playbackSpeed.value))
-        playTimer = setInterval(() => {
-            stepNext()
-        }, interval)
+        _pauseTimer()
+        _resumeTimer()
     }
 
     function play() {
@@ -293,10 +288,7 @@ export const useSimulationStore = defineStore('simulation', () => {
     function setPlaybackSpeed(speed) {
         const parsed = Number(speed)
         playbackSpeed.value = Number.isNaN(parsed) ? 1 : Math.min(10, Math.max(0.25, parsed))
-
-        if (isPlaying.value) {
-            startPlayTimer()
-        }
+        // useIntervalFn 会自动响应 playbackSpeed 的变化，无需手动重启计时器
     }
 
     function resetPlayback() {
@@ -379,7 +371,7 @@ export const useSimulationStore = defineStore('simulation', () => {
     })
 
     return {
-        algorithms: ALGORITHMS,
+        algorithms: ALGORITHM_LIST,
         processes,
         algorithm,
         quantum,

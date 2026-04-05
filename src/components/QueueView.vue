@@ -80,7 +80,8 @@ function onDrop(queueIndex, itemIndex) {
             <div class="queue-aux-grid">
                 <div class="queue-item">
                     <h4>等待队列</h4>
-                    <p v-if="waitingQueue.length">{{waitingQueue.map((item) => `${item.id}(未到达/等待)`).join(' · ')}}
+                    <p v-if="waitingQueue.length">
+                        {{ waitingQueue.map((item) => item.id).join(' · ') }}
                     </p>
                     <p v-else class="placeholder">空</p>
                 </div>

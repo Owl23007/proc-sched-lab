@@ -30,7 +30,7 @@ export async function runSimulation({ algorithm, processes, quantum, prioritySte
     }
 
     if (algorithm === 'mlfq' && wasm.simulateMlfq) {
-      const payload = JSON.stringify({ processes, base_quantum: quantum })
+      const payload = JSON.stringify({ processes, base_quantum: quantum, queue_count: queueCount })
       const simulation = JSON.parse(wasm.simulateMlfq(payload))
       return { ...simulation, __backend: 'wasm' }
     }

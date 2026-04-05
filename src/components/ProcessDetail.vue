@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { getStateLabel } from '../utils/processState'
 
 const props = defineProps({
     process: { type: Object, default: null },
@@ -8,19 +9,6 @@ const props = defineProps({
 
 const showPcb = ref(false)
 const showHistory = ref(true)
-
-function stateText(state) {
-    if (state === 'E') {
-        return '🟢 执行'
-    }
-    if (state === 'R') {
-        return '🟡 就绪'
-    }
-    if (state === 'F') {
-        return '⚪ 完成'
-    }
-    return '🔵 等待'
-}
 
 function progress(process) {
     if (!process?.burst_time) {
@@ -42,7 +30,7 @@ function progress(process) {
                         <span>PID: <strong>{{ process.id }}</strong></span>
                         <span>名称: <strong>{{ process.name }}</strong></span>
                         <span>优先级: <strong>{{ process.priority }}</strong></span>
-                        <span>状态: {{ stateText(process.status) }}</span>
+                        <span>状态: {{ getStateLabel(process.status) }}</span>
                     </div>
                 </div>
                 <div class="info-col">
@@ -77,7 +65,7 @@ function progress(process) {
                 <ul v-if="history.length" class="history-list compact-history">
                     <li v-for="(item, index) in history" :key="`${item.time}-${index}`">
                         <span class="history-time">t={{ item.time }}</span>
-                        → {{ stateText(item.state) }} · 剩余 {{ item.remaining_time }} · Q{{ (item.queue_level ?? 0) + 1
+                        → {{ getStateLabel(item.state) }} · 剩余 {{ item.remaining_time }} · Q{{ (item.queue_level ?? 0) + 1
                         }}
                     </li>
                 </ul>

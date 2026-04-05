@@ -40,35 +40,57 @@ watchEffect(() => {
                         <p>进程调度可视化实验平台</p>
                     </div>
                     <div class="header-actions">
+                        <span class="runtime-indicator"
+                            :class="{ running: simulation.isPlaying, busy: simulation.isRunning }">
+                            {{ simulation.isRunning ? '计算中' : simulation.isPlaying ? '播放中' : '待机' }}
+                        </span>
                         <span class="backend-indicator">后端：{{ simulation.backendDisplay }}</span>
-                        <button class="btn ghost btn-sm" @click="headerCollapsed = !headerCollapsed">
-                            {{ headerCollapsed ? '▼ 展开' : '▲ 收起' }}
-                        </button>
-                        <button class="btn ghost" @click="toggleTheme">
-                            {{ isDark ? '☀ 亮色' : '🌙 暗色' }}
-                        </button>
+                        <div class="header-action-group">
+                            <button class="btn ghost btn-sm" @click="headerCollapsed = !headerCollapsed">
+                                {{ headerCollapsed ? '▼ 展开参数区' : '▲ 收起参数区' }}
+                            </button>
+                            <button class="btn ghost btn-sm" @click="toggleTheme">
+                                {{ isDark ? '☀ 亮色' : '🌙 暗色' }}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="header-collapse" :class="{ collapsed: headerCollapsed }">
-                    <ControlBar v-model:zoom="zoom" v-model:debug-mode="debugMode" />
-                    <PlaybackBar />
+                <div class="header-control-stack">
+                    <section v-show="!headerCollapsed" class="panel-inner header-control-panel">
+                        <div class="header-control-head">
+                            <h3>基础参数</h3>
+                        </div>
+                        <ControlBar v-model:zoom="zoom" v-model:debug-mode="debugMode" />
+                    </section>
+                    <section class="panel-inner header-control-panel">
+                        <div class="header-control-head">
+                            <h3>播放与导出</h3>
+                            <span class="step-hint">主操作链、速度和进度</span>
+                        </div>
+                        <PlaybackBar />
+                    </section>
                 </div>
             </div>
         </template>
 
         <template #left>
-            <ProcessEditor :processes="simulation.processes" :state-map="simulation.processStateMap"
-                :selected-process-id="simulation.selectedProcessId" @update:processes="simulation.processes = $event"
-                @select="simulation.setSelectedProcess" />
+            <div class="left-column-fill">
+                <ProcessEditor class="left-card-fill" :processes="simulation.processes"
+                    :state-map="simulation.processStateMap" :selected-process-id="simulation.selectedProcessId"
+                    @update:processes="simulation.processes = $event" @select="simulation.setSelectedProcess" />
+            </div>
         </template>
 
         <template #center>
-            <GanttChart :timeline="simulation.visibleTimeline" :current-time="simulation.currentTime"
-                :events="simulation.events" :zoom="zoom" :selected-process-id="simulation.selectedProcessId"
-                @select="simulation.setSelectedProcess" />
-            <QueueView :snapshot="simulation.currentSnapshot" :waiting-queue="simulation.waitingQueue"
-                :completed-queue="simulation.completedQueue" :debug-mode="debugMode" />
+            <div class="center-column-fill">
+                <GanttChart class="center-card-top" :timeline="simulation.visibleTimeline"
+                    :current-time="simulation.currentTime" :events="simulation.events" :zoom="zoom"
+                    :selected-process-id="simulation.selectedProcessId" @select="simulation.setSelectedProcess" />
+                <QueueView class="center-card-bottom" :snapshot="simulation.currentSnapshot"
+                    :waiting-queue="simulation.waitingQueue" :completed-queue="simulation.completedQueue"
+                    :debug-mode="debugMode" />
+            </div>
         </template>
 
         <template #right>

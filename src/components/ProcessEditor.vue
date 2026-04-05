@@ -46,7 +46,7 @@ const filteredProcesses = computed(() => {
     return props.processes
         .map((process, sourceIndex) => ({ process, sourceIndex }))
         .filter(({ process }) => {
-            const state = props.stateMap.get(process.id) ?? 'W'
+            const state = props.stateMap.get(process.id) ?? 'R'
             const matchesKeyword =
                 !keyword || String(process.id).toLowerCase().includes(keyword) || String(process.name).toLowerCase().includes(keyword)
             const matchesState = stateFilter.value === 'all' || state === stateFilter.value
@@ -134,11 +134,11 @@ function importJson() {
 }
 
 function statusLabel(processId) {
-    return getStateLabel(props.stateMap.get(processId) ?? 'W')
+    return getStateLabel(props.stateMap.get(processId) ?? 'R')
 }
 
 function statusClass(processId) {
-    return getStateClass(props.stateMap.get(processId) ?? 'W')
+    return getStateClass(props.stateMap.get(processId) ?? 'R')
 }
 
 function resetFilters() {
@@ -263,6 +263,14 @@ function resetFilters() {
 </template>
 
 <style scoped>
+.process-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+    height: 100%;
+}
+
 .editor-toolbar {
     display: flex;
     gap: 6px;
@@ -337,6 +345,8 @@ function resetFilters() {
 }
 
 .table-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
     border: 1px solid var(--border-soft);
     border-radius: 10px;
     overflow: auto;

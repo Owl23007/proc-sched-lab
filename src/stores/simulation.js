@@ -121,7 +121,7 @@ export const useSimulationStore = defineStore('simulation', () => {
             ...base,
             ...(snapshotProcess ?? {}),
             ...(metric ?? {}),
-            status: snapshotProcess?.state ?? 'W',
+            status: snapshotProcess?.state ?? 'R',
         }
     })
 
@@ -359,6 +359,15 @@ export const useSimulationStore = defineStore('simulation', () => {
         popup.print()
     }
 
+    function invalidateSimulationData() {
+        pausePlayback()
+        result.value = null
+        compareResult.value = null
+        backend.value = 'unknown'
+        error.value = ''
+        currentStep.value = 0
+    }
+
     watch(result, () => {
         resetPlayback()
         selectedProcessId.value = processes.value[0]?.id ?? ''
@@ -369,6 +378,14 @@ export const useSimulationStore = defineStore('simulation', () => {
             selectedProcessId.value = processes.value[0].id
         }
     })
+
+    watch(
+        [processes, algorithm, quantum, queueCount, priorityDecay],
+        () => {
+            invalidateSimulationData()
+        },
+        { deep: true },
+    )
 
     return {
         algorithms: ALGORITHM_LIST,

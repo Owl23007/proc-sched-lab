@@ -444,6 +444,28 @@ button {
     margin-top: 8px;
 }
 
+.queue-flow {
+    margin-top: 10px;
+    display: grid;
+    gap: 6px;
+}
+
+.transition-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.transition-chip {
+    background: color-mix(in srgb, var(--accent), transparent 90%);
+    border-color: color-mix(in srgb, var(--accent), transparent 68%);
+}
+
+.transition-hint {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
 .queue-item {
     border: 1px dashed var(--border-main);
     border-radius: 10px;
@@ -456,6 +478,7 @@ button {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+    min-height: 24px;
 }
 
 .queue-token {
@@ -464,7 +487,44 @@ button {
     border-radius: 999px;
     padding: 2px 8px;
     font-size: 12px;
-    cursor: grab;
+    cursor: default;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+
+    &.is-draggable {
+        cursor: grab;
+
+        &:active {
+            cursor: grabbing;
+        }
+    }
+
+    &.is-moved {
+        border-color: color-mix(in srgb, var(--accent), transparent 45%);
+        background: color-mix(in srgb, var(--accent), transparent 84%);
+        animation: queue-token-pulse 0.8s ease;
+    }
+}
+
+.queue-token-enter-active,
+.queue-token-leave-active,
+.queue-token-move {
+    transition: transform 0.22s ease, opacity 0.22s ease;
+}
+
+.queue-token-enter-from,
+.queue-token-leave-to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.94);
+}
+
+@keyframes queue-token-pulse {
+    0% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent), transparent 75%);
+    }
+
+    100% {
+        box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+    }
 }
 
 .queue-aux-grid {
@@ -798,6 +858,12 @@ body {
 
 .ctrl-field-advanced {
     margin-left: 4px;
+}
+
+.ctrl-note {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-muted);
 }
 
 .ctrl-sep {

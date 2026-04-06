@@ -12,7 +12,7 @@ export const ALGORITHMS = {
     mlfq: {
         key: 'mlfq',
         label: 'MLFQ',
-        run: ({ processes, baseQuantum, queueCount }) => runMLFQ(processes, baseQuantum, queueCount),
+        run: ({ processes, baseQuantum }) => runMLFQ(processes, baseQuantum),
     },
     fcfs: {
         key: 'fcfs',

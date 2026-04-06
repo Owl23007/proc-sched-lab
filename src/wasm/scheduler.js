@@ -19,7 +19,7 @@ async function loadWasmApi() {
   return wasmApiPromise
 }
 
-export async function runSimulation({ algorithm, processes, quantum, priorityStep, queueCount }) {
+export async function runSimulation({ algorithm, processes, quantum, priorityStep }) {
   const wasm = await loadWasmApi()
 
   if (wasm) {
@@ -30,7 +30,7 @@ export async function runSimulation({ algorithm, processes, quantum, prioritySte
     }
 
     if (algorithm === 'mlfq' && wasm.simulateMlfq) {
-      const payload = JSON.stringify({ processes, base_quantum: quantum, queue_count: queueCount })
+      const payload = JSON.stringify({ processes, base_quantum: quantum })
       const simulation = JSON.parse(wasm.simulateMlfq(payload))
       return { ...simulation, __backend: 'wasm' }
     }
@@ -47,10 +47,10 @@ export async function runSimulation({ algorithm, processes, quantum, prioritySte
   }
 
   if (algorithm === 'mlfq') {
-    const simulation = runner.run({ processes, baseQuantum: quantum, queueCount })
+    const simulation = runner.run({ processes, baseQuantum: quantum })
     return { ...simulation, __backend: 'js' }
   }
 
-  const simulation = runner.run({ processes, quantum, priorityStep, baseQuantum: quantum, queueCount })
+  const simulation = runner.run({ processes, quantum, priorityStep, baseQuantum: quantum })
   return { ...simulation, __backend: 'js' }
 }

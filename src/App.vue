@@ -66,7 +66,6 @@ watchEffect(() => {
                     <section class="panel-inner header-control-panel">
                         <div class="header-control-head">
                             <h3>播放与导出</h3>
-                            <span class="step-hint">主操作链、速度和进度</span>
                         </div>
                         <PlaybackBar />
                     </section>

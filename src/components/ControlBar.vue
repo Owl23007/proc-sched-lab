@@ -1,7 +1,7 @@
 <script setup>
 /**
  * ControlBar — 算法参数面板
- * 负责算法选择 + 时间片 / 队列数 / 优先级衰减滑块 + 时间标尺 + 调试开关
+ * 负责算法选择 + 时间片 / 优先级衰减滑块 + 时间标尺 + 调试开关
  * App-local 状态（zoom / debugMode）通过 v-model 传入，其余参数直接读写 simulation store
  */
 import { ref } from 'vue'
@@ -33,11 +33,6 @@ const showAdvanced = ref(false)
             <label class="ctrl-field">
                 时间片
                 <input v-model.number="simulation.quantum" type="number" min="1" class="input-short" />
-            </label>
-
-            <label class="ctrl-field">
-                队列数
-                <input v-model.number="simulation.queueCount" type="number" min="1" max="6" class="input-short" />
             </label>
 
             <label class="ctrl-field">

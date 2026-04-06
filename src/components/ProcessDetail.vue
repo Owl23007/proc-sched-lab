@@ -52,9 +52,7 @@ function progress(process) {
                 <span class="collapse-icon">{{ showPcb ? '▾' : '▸' }}</span>
                 PCB 详情 (JSON)
             </button>
-            <div class="collapse-section" :class="{ open: showPcb }">
-                <pre class="pcb-pre">{{ JSON.stringify(process, null, 2) }}</pre>
-            </div>
+            <pre v-if="showPcb" class="pcb-pre">{{ JSON.stringify(process, null, 2) }}</pre>
 
             <!-- Collapsible: Status history -->
             <button class="collapse-toggle" @click="showHistory = !showHistory">

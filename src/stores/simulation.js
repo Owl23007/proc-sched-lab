@@ -9,7 +9,6 @@ export const useSimulationStore = defineStore('simulation', () => {
     const processes = ref(defaultProcesses())
     const algorithm = ref('priority_rr')
     const quantum = ref(2)
-    const queueCount = ref(3)
     const priorityDecay = ref(2)
     const result = ref(null)
     const compareResult = ref(null)
@@ -184,7 +183,6 @@ export const useSimulationStore = defineStore('simulation', () => {
                 processes: processes.value,
                 quantum: Number(quantum.value),
                 priorityStep: Number(priorityDecay.value),
-                queueCount: Number(queueCount.value),
             })
 
             if (simulation.error) {
@@ -307,7 +305,7 @@ export const useSimulationStore = defineStore('simulation', () => {
             '',
             `- 算法: ${algorithm.value}`,
             `- 时间片: ${quantum.value}`,
-            `- 队列数量: ${queueCount.value}`,
+            ...(algorithm.value === 'mlfq' ? ['- MLFQ 队列数量: 3（固定）'] : []),
             `- 优先级衰减: ${priorityDecay.value}`,
             `- 进程数量: ${processes.value.length}`,
             '',
@@ -380,7 +378,7 @@ export const useSimulationStore = defineStore('simulation', () => {
     })
 
     watch(
-        [processes, algorithm, quantum, queueCount, priorityDecay],
+        [processes, algorithm, quantum, priorityDecay],
         () => {
             invalidateSimulationData()
         },
@@ -392,7 +390,6 @@ export const useSimulationStore = defineStore('simulation', () => {
         processes,
         algorithm,
         quantum,
-        queueCount,
         priorityDecay,
         result,
         compareResult,

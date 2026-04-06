@@ -172,15 +172,12 @@ function resetFilters() {
 
         <!-- Compact toolbar: search + action buttons -->
         <div class="editor-toolbar">
-            <input v-model="search" placeholder="🔍 搜索 PID / 名称" class="search-input" />
+            <input v-model="search" placeholder=" 搜索PID/名称" class="search-input" />
             <button class="btn ghost btn-sm" :class="{ active: showFilters }" @click="toggleFilters" title="筛选">⚙
                 筛选</button>
             <button class="btn ghost btn-sm" :class="{ active: showAddForm }" @click="toggleAddForm" title="添加进程">＋
                 添加</button>
             <button class="btn ghost btn-sm" @click="showImportModal = true" title="批量导入">📄 导入</button>
-            <button class="btn ghost btn-sm" :disabled="!hasActiveFilters" @click="resetFilters" title="清空筛选">
-                清空
-            </button>
         </div>
 
         <div v-if="hasActiveFilters" class="toolbar-meta">
@@ -205,6 +202,11 @@ function resetFilters() {
                     优先级 ≤
                     <input v-model.number="maxPriority" type="number" min="1" class="input-short" />
                 </label>
+                <div class="filter-actions">
+                    <button class="btn ghost btn-sm" :disabled="!hasActiveFilters" @click="resetFilters" title="清空筛选">
+                        清空筛选
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -317,7 +319,17 @@ function resetFilters() {
 .search-input {
     flex: 1;
     min-width: 0;
-    min-height: 30px;
+    height: 32px;
+    min-height: 32px;
+}
+
+.editor-toolbar .btn-sm {
+    height: 32px;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
 }
 
 .toolbar-meta {
@@ -341,6 +353,17 @@ function resetFilters() {
     background: color-mix(in srgb, var(--bg-soft), transparent 12%);
     border: 1px solid var(--border-soft);
     border-radius: 8px;
+}
+
+.filter-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: flex-end;
+}
+
+.filter-actions .btn-sm {
+    height: 32px;
+    min-height: 32px;
 }
 
 .add-form-row {
@@ -486,6 +509,12 @@ function resetFilters() {
 }
 
 @media (max-width: 520px) {
+    .filter-actions {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-end;
+    }
+
     .param-row {
         grid-template-columns: 1fr;
     }

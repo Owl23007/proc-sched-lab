@@ -1,8 +1,10 @@
 import { buildSnapshot, finalize, enqueueArrivals, enqueueArrivalsBetween } from './utils.js'
 
-export function runMLFQ(processes, baseQuantum, queueCount = 3) {
-  const levels = Math.max(1, Number(queueCount) || 3)
-  const quantums = Array.from({ length: levels }, (_, index) => Math.max(1, baseQuantum) * 2 ** index)
+const MLFQ_LEVELS = 3
+
+export function runMLFQ(processes, baseQuantum) {
+  const normalizedBaseQuantum = Math.max(1, Number(baseQuantum) || 1)
+  const quantums = Array.from({ length: MLFQ_LEVELS }, (_, index) => normalizedBaseQuantum * 2 ** index)
   const cloned = processes.map((process) => ({
     ...process,
     remaining_time: process.burst_time,
@@ -15,7 +17,7 @@ export function runMLFQ(processes, baseQuantum, queueCount = 3) {
   let time = 0
   let completed = 0
   const arrived = new Array(cloned.length).fill(false)
-  const queues = Array.from({ length: levels }, () => [])
+  const queues = Array.from({ length: MLFQ_LEVELS }, () => [])
   const timeline = []
   const snapshots = []
 
@@ -55,7 +57,7 @@ export function runMLFQ(processes, baseQuantum, queueCount = 3) {
       cloned[index].finish_time = time
       completed += 1
     } else {
-      const nextLevel = Math.min(levels - 1, level + 1)
+      const nextLevel = Math.min(MLFQ_LEVELS - 1, level + 1)
       cloned[index].queue_level = nextLevel
       queues[nextLevel].push(index)
     }

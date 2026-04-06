@@ -67,22 +67,6 @@
     flex-direction: column;
     gap: 10px;
     padding-right: 4px;
-    /* custom scrollbar */
-    scrollbar-width: thin;
-    scrollbar-color: var(--border-main) transparent;
-}
-
-.kanban-column::-webkit-scrollbar {
-    width: 5px;
-}
-
-.kanban-column::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.kanban-column::-webkit-scrollbar-thumb {
-    background: var(--border-main);
-    border-radius: 999px;
 }
 
 /* 992px - 1279px: 2 columns, right panel sinks to second row */

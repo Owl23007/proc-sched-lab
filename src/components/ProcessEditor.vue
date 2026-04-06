@@ -141,6 +141,20 @@ function statusClass(processId) {
     return getStateClass(props.stateMap.get(processId) ?? 'R')
 }
 
+function toggleFilters() {
+    showFilters.value = !showFilters.value
+    if (showFilters.value) {
+        showAddForm.value = false
+    }
+}
+
+function toggleAddForm() {
+    showAddForm.value = !showAddForm.value
+    if (showAddForm.value) {
+        showFilters.value = false
+    }
+}
+
 function resetFilters() {
     search.value = ''
     stateFilter.value = 'all'
@@ -159,23 +173,22 @@ function resetFilters() {
         <!-- Compact toolbar: search + action buttons -->
         <div class="editor-toolbar">
             <input v-model="search" placeholder="🔍 搜索 PID / 名称" class="search-input" />
-            <button class="btn ghost btn-sm" :class="{ active: showFilters }" @click="showFilters = !showFilters"
-                title="筛选">⚙ 筛选</button>
-            <button class="btn ghost btn-sm" :class="{ active: showAddForm }" @click="showAddForm = !showAddForm"
-                title="添加进程">＋ 添加</button>
+            <button class="btn ghost btn-sm" :class="{ active: showFilters }" @click="toggleFilters" title="筛选">⚙
+                筛选</button>
+            <button class="btn ghost btn-sm" :class="{ active: showAddForm }" @click="toggleAddForm" title="添加进程">＋
+                添加</button>
             <button class="btn ghost btn-sm" @click="showImportModal = true" title="批量导入">📄 导入</button>
             <button class="btn ghost btn-sm" :disabled="!hasActiveFilters" @click="resetFilters" title="清空筛选">
                 清空
             </button>
         </div>
 
-        <div class="toolbar-meta">
-            <span v-if="hasActiveFilters" class="filter-hint">已启用 {{ activeFilterCount }} 个筛选条件</span>
-            <span v-else class="filter-hint muted">未启用筛选条件</span>
+        <div v-if="hasActiveFilters" class="toolbar-meta">
+            <span class="filter-hint">已启用 {{ activeFilterCount }} 个筛选条件</span>
         </div>
 
         <!-- Collapsible filters -->
-        <div class="collapse-section" :class="{ open: showFilters }">
+        <div v-if="showFilters" class="collapse-section">
             <div class="filter-row">
                 <label>
                     状态
@@ -196,7 +209,7 @@ function resetFilters() {
         </div>
 
         <!-- Collapsible add form -->
-        <div class="collapse-section" :class="{ open: showAddForm }">
+        <div v-if="showAddForm" class="collapse-section">
             <div class="add-form-row">
                 <input v-model="form.id" placeholder="PID" class="input-short" />
                 <input v-model="form.name" placeholder="名称" class="input-short" />
@@ -214,36 +227,52 @@ function resetFilters() {
                     <tr>
                         <th>PID</th>
                         <th>名称</th>
-                        <th>优先级</th>
-                        <th>到达</th>
-                        <th>服务</th>
                         <th>状态</th>
-                        <th></th>
+                        <th class="action-col"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="row in filteredProcesses" :key="`${row.process.id}-${row.sourceIndex}`"
-                        :class="{ selected: row.process.id === selectedProcessId }"
-                        @click="emit('select', row.process.id)">
-                        <td><input :value="row.process.id" @input="update(row.sourceIndex, 'id', $event.target.value)"
-                                @click.stop /></td>
-                        <td><input :value="row.process.name"
-                                @input="update(row.sourceIndex, 'name', $event.target.value)" @click.stop /></td>
-                        <td><input type="number" min="1" max="100" :value="row.process.priority"
-                                @input="update(row.sourceIndex, 'priority', $event.target.value)" @click.stop /></td>
-                        <td><input type="number" min="0" :value="row.process.arrival_time"
-                                @input="update(row.sourceIndex, 'arrival_time', $event.target.value)" @click.stop />
-                        </td>
-                        <td><input type="number" min="1" :value="row.process.burst_time"
-                                @input="update(row.sourceIndex, 'burst_time', $event.target.value)" @click.stop /></td>
-                        <td><span class="status-chip" :class="statusClass(row.process.id)">{{
-                            statusLabel(row.process.id)
-                                }}</span></td>
-                        <td><button class="btn ghost btn-sm" @click.stop="removeProcess(row.sourceIndex)">✕</button>
-                        </td>
-                    </tr>
+                    <template v-for="row in filteredProcesses" :key="`${row.process.id}-${row.sourceIndex}`">
+                        <tr class="process-row-top" :class="{ selected: row.process.id === selectedProcessId }"
+                            @click="emit('select', row.process.id)">
+                            <td><input :value="row.process.id"
+                                    @input="update(row.sourceIndex, 'id', $event.target.value)" @click.stop /></td>
+                            <td><input :value="row.process.name"
+                                    @input="update(row.sourceIndex, 'name', $event.target.value)" @click.stop /></td>
+                            <td><span class="status-chip" :class="statusClass(row.process.id)">{{
+                                statusLabel(row.process.id)
+                                    }}</span></td>
+                            <td><button class="btn ghost btn-sm" @click.stop="removeProcess(row.sourceIndex)">✕</button>
+                            </td>
+                        </tr>
+                        <tr class="process-row-bottom" :class="{ selected: row.process.id === selectedProcessId }"
+                            @click="emit('select', row.process.id)">
+                            <td colspan="4">
+                                <div class="param-row">
+                                    <label class="param-field">
+                                        <span>优先级</span>
+                                        <input type="number" min="1" max="100" :value="row.process.priority"
+                                            @input="update(row.sourceIndex, 'priority', $event.target.value)"
+                                            @click.stop />
+                                    </label>
+                                    <label class="param-field">
+                                        <span>到达</span>
+                                        <input type="number" min="0" :value="row.process.arrival_time"
+                                            @input="update(row.sourceIndex, 'arrival_time', $event.target.value)"
+                                            @click.stop />
+                                    </label>
+                                    <label class="param-field">
+                                        <span>服务</span>
+                                        <input type="number" min="1" :value="row.process.burst_time"
+                                            @input="update(row.sourceIndex, 'burst_time', $event.target.value)"
+                                            @click.stop />
+                                    </label>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
                     <tr v-if="!filteredProcesses.length" class="empty-row">
-                        <td colspan="7">暂无匹配进程，请调整筛选条件。</td>
+                        <td colspan="4">暂无匹配进程，请调整筛选条件。</td>
                     </tr>
                 </tbody>
             </table>
@@ -266,9 +295,16 @@ function resetFilters() {
 .process-panel {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     min-height: 0;
     height: 100%;
+}
+
+.panel-header,
+.editor-toolbar,
+.toolbar-meta,
+.collapse-section {
+    flex: 0 0 auto;
 }
 
 .editor-toolbar {
@@ -288,16 +324,12 @@ function resetFilters() {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    min-height: 18px;
+    min-height: 0;
 }
 
 .filter-hint {
     font-size: 12px;
     color: var(--text-secondary);
-}
-
-.filter-hint.muted {
-    color: var(--text-muted);
 }
 
 .filter-row {
@@ -349,7 +381,13 @@ function resetFilters() {
     min-height: 0;
     border: 1px solid var(--border-soft);
     border-radius: 10px;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.process-table {
+    min-width: 0;
+    table-layout: fixed;
 }
 
 .process-table thead th {
@@ -357,6 +395,43 @@ function resetFilters() {
     top: 0;
     z-index: 1;
     background: color-mix(in srgb, var(--bg-soft), transparent 12%);
+}
+
+.process-table thead th.action-col {
+    width: 52px;
+    text-align: center;
+}
+
+.process-row-top td {
+    border-bottom: none;
+    padding-bottom: 4px;
+}
+
+.process-row-bottom td {
+    padding-top: 0;
+}
+
+.param-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.param-field {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.param-field span {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.param-field input {
+    min-width: 0;
 }
 
 .process-table tbody tr {
@@ -407,19 +482,12 @@ function resetFilters() {
 }
 
 .collapse-section {
-    max-height: 0;
-    opacity: 0;
-    transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.2s ease;
-    overflow: hidden;
+    flex: 0 0 auto;
 }
 
-.collapse-section>* {
-    overflow: visible;
-}
-
-.collapse-section.open {
-    max-height: 180px;
-    opacity: 1;
-    margin-top: 2px;
+@media (max-width: 520px) {
+    .param-row {
+        grid-template-columns: 1fr;
+    }
 }
 </style>

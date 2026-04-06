@@ -56,6 +56,7 @@
     --motion-base: 180ms;
     --motion-slow: 260ms;
     --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --scrollbar-size: 4px;
 
     /* Legacy aliases (kept for incremental migration) */
     --font-family: var(--font-family-base);
@@ -114,6 +115,22 @@
 
 * {
     box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-main) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--border-main);
+    border-radius: 999px;
 }
 
 body {

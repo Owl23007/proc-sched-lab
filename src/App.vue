@@ -36,7 +36,7 @@ watchEffect(() => {
             <div class="header panel">
                 <div class="header-top">
                     <div class="brand">
-                        <h1>SchedLab<span class="version-tag">v0.3</span></h1>
+                        <h1>SchedLab<span class="version-tag">v1.0.0</span></h1>
                         <p>进程调度可视化实验平台</p>
                     </div>
                     <div class="header-actions">

@@ -12,7 +12,7 @@
 
 ## Introduction
 
-**SchedLab** is a high-performance **process scheduling visualization and experimentation platform**. This project aims to solve the limitations of traditional scheduling demonstration tools, which often suffer from performance bottlenecks, lack of depth, and limited analytical capabilities.
+**SchedLab** is a **process scheduling visualization and experimentation platform**.
 
 By adopting **Rust + WebAssembly (WASM)** as a high-performance scheduling core and combining it with a modern **Vue 3** visual interface, SchedLab not only smoothly simulates concurrent scheduling of massive process sets but also introduces **intelligent workload analysis**, an **algorithm recommendation engine**, and a **pluggable scheduler architecture**. It provides an intuitive and powerful environment for researching, comparing, and optimizing OS scheduling strategies.
 
